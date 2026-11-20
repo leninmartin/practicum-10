@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neuralnetics — Interactive Cortical Control Console</title>
+  <style>
+    :root {
+      --bg: #050811;
+      --surface: #0b1120;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: rgba(56, 189, 248, 0.25);
+      --accent: #38bdf8;
+      --accent-secondary: #a855f7;
+    }
+
+    body.clinical-theme {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #cbd5e1;
+      --accent: #0284c7;
+      --accent-secondary: #7e22ce;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    header {
+      background: linear-gradient(90deg, #090d1e 0%, #0f172a 100%);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+      color: #ffffff;
+      padding: 1.15rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    header h1 {
+      font-size: clamp(1.15rem, 2.5vw, 1.5rem);
+      letter-spacing: 0.04em;
+      background: linear-gradient(90deg, #38bdf8, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .btn {
+      background: linear-gradient(90deg, #0284c7, #7e22ce);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.55rem 1rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: opacity 0.2s ease, transform 0.15s ease;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: #ffffff;
+      padding: 0.3rem 0.65rem;
+      font-size: 0.8rem;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1.25rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: border-color 0.25s ease;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+    }
+
+    .card h2 {
+      font-size: 1.15rem;
+      color: var(--accent);
+    }
+
+    .preview-box {
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px dashed var(--border);
+      background-color: var(--bg);
+      min-height: 75px;
+      word-break: break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.92rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    input[type="text"],
+    input[type="color"] {
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background-color: var(--bg);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    input[type="text"] {
+      flex: 1;
+    }
+
+    input[type="color"] {
+      width: 48px;
+      height: 40px;
+      padding: 0.2rem;
+      cursor: pointer;
+    }
+
+    .counter-display {
+      font-size: 2.25rem;
+      font-weight: 800;
+      text-align: center;
+      padding: 0.5rem;
+    }
+
+    .task-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .task-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.55rem 0.8rem;
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .task-list li.done span {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .meta {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Neuralnetics: Cortical Control Console</h1>
+    <button class="btn" id="themeToggleBtn">Switch to Clinical Lab Mode</button>
+  </header>
+
+  <main class="container">
+    <!-- Card 1: Neural Thought-Stream Decoder -->
+    <section class="card">
+      <h2>1. Neural Thought-Stream Decoder</h2>
+      <div class="input-row">
+        <input type="text" id="liveInput" placeholder="Transmit cortical impulse..." maxlength="80" />
+        <input type="color" id="colorPicker" value="#38bdf8" title="Select waveform spectrum" />
+      </div>
+      <div class="preview-box" id="livePreview">[SYNAPTIC BUFFER READY] Awaiting neural packet...</div>
+      <p class="meta">Packet payload length: <strong id="charCount">0</strong> / 80 bytes</p>
+    </section>
+
+    <!-- Card 2: Synaptic Gain & Voltage Calibration -->
+    <section class="card">
+      <h2>2. Synaptic Gain Calibration (mV)</h2>
+      <div class="counter-display" id="counterValue">0</div>
+      <div class="input-row" style="justify-content: center;">
+        <button class="btn" id="decBtn">- Attenuate</button>
+        <button class="btn" id="resetBtn">Baseline</button>
+        <button class="btn" id="incBtn">+ Amplify</button>
+      </div>
+      <p class="meta" id="counterStatus" style="text-align: center;">Polarization State: Resting Potential (0 mV)</p>
+    </section>
+
+    <!-- Card 3: Active Neural Pathway Nodes -->
+    <section class="card">
+      <h2>3. Active Neural Pathway Queue</h2>
+      <div class="input-row">
+        <input type="text" id="taskInput" placeholder="Add neuro-protocol node..." />
+        <button class="btn" id="addTaskBtn">Bind</button>
+      </div>
+      <ul class="task-list" id="taskList">
+        <li><span>1. Calibrate cortical micro-array</span><button class="btn btn-danger">Sever</button></li>
+        <li><span>2. Synchronize EEG telemetry bus</span><button class="btn btn-danger">Sever</button></li>
+      </ul>
+      <p class="meta">Click a pathway node to toggle synaptic lock, or sever it from the matrix.</p>
+    </section>
+  </main>
+
+  <script>
+    // Step 1: Selecting DOM Elements
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+    const liveInput = document.getElementById("liveInput");
+    const colorPicker = document.getElementById("colorPicker");
+    const livePreview = document.getElementById("livePreview");
+    const charCount = document.getElementById("charCount");
+
+    const counterValue = document.getElementById("counterValue");
+    const counterStatus = document.getElementById("counterStatus");
+    const decBtn = document.getElementById("decBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const incBtn = document.getElementById("incBtn");
+
+    const taskInput = document.getElementById("taskInput");
+    const addTaskBtn = document.getElementById("addTaskBtn");
+    const taskList = document.getElementById("taskList");
+
+    let count = 0;
+
+    // Step 2 & 3: Adding Event Listeners & Manipulating DOM Properties
+    themeToggleBtn.addEventListener("click", () => {
+      const isClinical = document.body.classList.toggle("clinical-theme");
+      themeToggleBtn.textContent = isClinical ? "Switch to Cyber-Dark Mode" : "Switch to Clinical Lab Mode";
+    });
+
+    liveInput.addEventListener("input", () => {
+      const text = liveInput.value;
+      livePreview.textContent = text ? `[DECODED]: ${text}` : "[SYNAPTIC BUFFER READY] Awaiting neural packet...";
+      charCount.textContent = text.length;
+    });
+
+    colorPicker.addEventListener("input", () => {
+      livePreview.style.color = colorPicker.value;
+    });
+
+    function updateCounter(newVal) {
+      count = newVal;
+      counterValue.textContent = count > 0 ? `+${count}` : count;
+      if (count > 0) {
+        counterValue.style.color = "#10b981";
+        counterStatus.textContent = `Polarization State: Excitatory Depolarization (+${count} mV)`;
+      } else if (count < 0) {
+        counterValue.style.color = "#ef4444";
+        counterStatus.textContent = `Polarization State: Inhibitory Hyperpolarization (${count} mV)`;
+      } else {
+        counterValue.style.color = "inherit";
+        counterStatus.textContent = "Polarization State: Resting Potential (0 mV)";
+      }
+    }
+
+    incBtn.addEventListener("click", () => updateCounter(count + 1));
+    decBtn.addEventListener("click", () => updateCounter(count - 1));
+    resetBtn.addEventListener("click", () => updateCounter(0));
+
+    function createTaskItem(text) {
+      const li = document.createElement("li");
+      const span = document.createElement("span");
+      span.textContent = text;
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "btn btn-danger";
+      delBtn.textContent = "Sever";
+
+      li.appendChild(span);
+      li.appendChild(delBtn);
+      taskList.appendChild(li);
+    }
+
+    addTaskBtn.addEventListener("click", () => {
+      const val = taskInput.value.trim();
+      if (!val) return;
+      createTaskItem(val);
+      taskInput.value = "";
+      taskInput.focus();
+    });
+
+    taskInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") addTaskBtn.click();
+    });
+
+    // Event delegation on parent <ul>
+    taskList.addEventListener("click", (e) => {
+      if (e.target.classList.contains("btn-danger")) {
+        e.target.parentElement.remove();
+      } else if (e.target.closest("li")) {
+        e.target.closest("li").classList.toggle("done");
+      }
+    });
+  </script>
+</body>
+</html>
